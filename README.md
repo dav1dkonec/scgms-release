@@ -23,6 +23,8 @@
 
 ## macOS (AppleClang)
 
+Ported and verified on macOS 14 / Apple Silicon: the full tree builds, the unit tests pass, `scgms-console` and `scgms-desktop` run, and the distributed solver completes.
+
 - Prerequisites, via Homebrew:
 
 `brew install cmake ninja qt boost tbb`
@@ -42,6 +44,9 @@
   points there; keep the two in sync if you change `binaryDir`.
 - Do not build inside a directory synchronised by iCloud Drive/OneDrive - the sync daemon races the
   build and can leave behind conflict copies of the source tree.
+- Port 5000 is occupied by the AirPlay Receiver (ControlCenter) on macOS, so a wildcard bind there
+  fails with EADDRINUSE. The distributed controller therefore uses 5555; pass a matching
+  `--address tcp://<host>:5555` to every worker. AirPlay also holds port 7000.
 
 # pagmo4scgms
 
