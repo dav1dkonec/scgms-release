@@ -4,6 +4,8 @@
 
 `git submodule update --remote --init`
 
+## Windows (MSVC)
+
 - CMake configure step
 
 `cmake --preset msvc-ninja-configure`
@@ -18,6 +20,28 @@
 
 - Set your MSVC and Qt path in CMakePresets.json before attempting to configure or build
 - To compile outside of IDE use x64 Native Tools Command Prompt for VS
+
+## macOS (AppleClang)
+
+- Prerequisites, via Homebrew:
+
+`brew install cmake ninja qt boost tbb`
+
+- CMake configure + build
+
+`cmake --workflow --preset macos-ninja-all`
+
+(or `cmake --preset macos-ninja-configure` and `cmake --build --preset macos-ninja-build` separately)
+
+- The presets are guarded by a `condition` on the host system, so only the ones that apply to the
+  machine you are on are offered.
+- The preset assumes an Apple Silicon Homebrew prefix (`/opt/homebrew`). On an Intel Mac, set the
+  `HOMEBREW_PATH` environment variable to `/usr/local` before configuring.
+- Unlike the Windows `.lib`, the xlnt `.dylib` is a CMake LIBRARY artifact and so follows
+  `CMAKE_LIBRARY_OUTPUT_DIRECTORY` into `<binaryDir>/compiled`. `XLNT_LIBRARY` in the macOS preset
+  points there; keep the two in sync if you change `binaryDir`.
+- Do not build inside a directory synchronised by iCloud Drive/OneDrive - the sync daemon races the
+  build and can leave behind conflict copies of the source tree.
 
 # pagmo4scgms
 

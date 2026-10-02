@@ -12,6 +12,11 @@
       "description": "Configure using MSVC and Ninja",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "environment": {
         "QT_BASE_PATH": "C:/Qt",
         "QT_VERSION_PATH": "C:/Qt/6.9.3",
@@ -28,6 +33,35 @@
         "EXCELFORMAT_LIBRARY": "${sourceDir}/deps/ExcelFormat/build/",
         "EIGEN3_INCLUDE": "${sourceDir}/deps/Eigen3"
       }
+    },
+    {
+      "name": "macos-ninja-configure",
+      "displayName": "macOS - AppleClang (Ninja)",
+      "description": "Configure using AppleClang and Ninja, with Qt, Boost and TBB provided by Homebrew. On an Intel Mac, override HOMEBREW_PATH with /usr/local. XLNT_LIBRARY points into the build tree because the xlnt dylib, unlike the Windows import library, is a LIBRARY artifact and therefore follows CMAKE_LIBRARY_OUTPUT_DIRECTORY into <binaryDir>/compiled; keep it in sync when changing binaryDir.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "environment": {
+        "HOMEBREW_PATH": "/opt/homebrew"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_PREFIX_PATH": "$env{HOMEBREW_PATH};$env{HOMEBREW_PATH}/opt/qt;$env{HOMEBREW_PATH}/opt/boost;$env{HOMEBREW_PATH}/opt/tbb",
+        "Qt6_DIR": "$env{HOMEBREW_PATH}/opt/qt/lib/cmake/Qt6",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
+        "SMARTCGMS_COMMON_DIR": "${sourceDir}/common",
+        "XLNT_INCLUDE": "${sourceDir}/deps/xlnt/include/",
+        "XLNT_LIBRARY": "${sourceDir}/build/compiled/",
+        "EXCELFORMAT_INCLUDE": "${sourceDir}/deps/ExcelFormat/include/",
+        "EXCELFORMAT_LIBRARY": "${sourceDir}/deps/ExcelFormat/build/",
+        "EIGEN3_INCLUDE": "${sourceDir}/deps/Eigen3"
+      }
     }
   ],
   "buildPresets": [
@@ -35,6 +69,12 @@
       "name": "msvc-ninja-build",
       "displayName": "Build using msvc and ninja",
       "configurePreset": "msvc-ninja-configure",
+      "jobs": 8
+    },
+    {
+      "name": "macos-ninja-build",
+      "displayName": "Build using AppleClang and ninja",
+      "configurePreset": "macos-ninja-configure",
       "jobs": 8
     }
   ],
@@ -51,6 +91,21 @@
         {
           "type": "build",
           "name": "msvc-ninja-build"
+        }
+      ]
+    },
+    {
+      "name": "macos-ninja-all",
+      "displayName": "Full Ninja Workflow (macOS)",
+      "description": "Configure and build using AppleClang and ninja",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "macos-ninja-configure"
+        },
+        {
+          "type": "build",
+          "name": "macos-ninja-build"
         }
       ]
     }

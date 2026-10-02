@@ -6,18 +6,42 @@ message("========================")
 message("Building dependencies...")
 message("========================")
 
+# The dependencies below are configured by nested CMake runs, which do not inherit our cache.
+# ExcelFormat and xlnt still declare cmake_minimum_required(VERSION <3.5); CMake 4 refuses those
+# outright, so the policy floor has to be handed down explicitly when the caller sets one.
+set(DEPENDENCY_CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+)
+if(DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    list(APPEND DEPENDENCY_CMAKE_ARGS -DCMAKE_POLICY_VERSION_MINIMUM=${CMAKE_POLICY_VERSION_MINIMUM})
+endif()
+if(APPLE AND DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    list(APPEND DEPENDENCY_CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
+endif()
+
+# A failing nested CMake run only surfaces much later, as a confusing "missing and no known rule
+# to make it" from the generator, so stop as soon as one of the steps below reports an error.
+# On failure execute_process yields either an exit code or an error string, hence the STREQUAL.
+function(CHECK_DEPENDENCY_STEP STEP_RESULT)
+    if(NOT STEP_RESULT STREQUAL "0")
+        message(FATAL_ERROR "Building the dependencies failed (see the output above); the step reported '${STEP_RESULT}'.")
+    endif()
+endfunction()
+
 #########################################################################################
 # ExcelFormat
 
 execute_process(
         COMMAND cmake -S . -B ./build/ -G ${CMAKE_GENERATOR}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        ${DEPENDENCY_CMAKE_ARGS}
         -DCMAKE_DEBUG_POSTFIX=d # Without this debug build is unable to find the lib file
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/ExcelFormat
+        RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
+CHECK_DEPENDENCY_STEP("${DEPENDENCY_STEP_RESULT}")
 
 message(STATUS "> ExcelFormat has been configured.")
 
@@ -25,7 +49,9 @@ message(STATUS "> ExcelFormat has been configured.")
 execute_process(
         COMMAND cmake --build ./build/ --parallel
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/ExcelFormat
+        RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
+CHECK_DEPENDENCY_STEP("${DEPENDENCY_STEP_RESULT}")
 
 message(STATUS "> ExcelFormat has been built.")
 
@@ -35,10 +61,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/compiled)
 
 execute_process(
         COMMAND cmake -S . -B ./build/ -G ${CMAKE_GENERATOR}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        ${DEPENDENCY_CMAKE_ARGS}
 
         # Make sure xlnt's output is place into the "compiler" directory (the xlnt.dll)
         -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${CMAKE_CURRENT_BINARY_DIR}/compiled
@@ -46,14 +69,18 @@ execute_process(
         -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${CMAKE_CURRENT_BINARY_DIR}/compiled
 
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/xlnt
+        RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
+CHECK_DEPENDENCY_STEP("${DEPENDENCY_STEP_RESULT}")
 
 message(STATUS "> xlnt has been configured.")
 
 execute_process(
         COMMAND cmake --build ./build/ --parallel
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/xlnt
+        RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
+CHECK_DEPENDENCY_STEP("${DEPENDENCY_STEP_RESULT}")
 
 message(STATUS "> xlnt has been built.")
 
@@ -62,12 +89,11 @@ message(STATUS "> xlnt has been built.")
 
 execute_process(
         COMMAND cmake -S . -B ./build/ -G ${CMAKE_GENERATOR}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        ${DEPENDENCY_CMAKE_ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/Eigen3
+        RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
+CHECK_DEPENDENCY_STEP("${DEPENDENCY_STEP_RESULT}")
 
 message(STATUS "> Eigen3 has been configured.")
 
