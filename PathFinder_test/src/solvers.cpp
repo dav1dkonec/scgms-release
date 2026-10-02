@@ -162,7 +162,7 @@ void Run_Solver(const scgms::TSolver_Descriptor &desc, CCommon_Problem * working
 	// Distributed solver - solver's data
 	solver::TDistributedSolver_Data ds_data = {
 		"tproblem_udp", // Solver lib name
-		"tcp://localhost:5000", // Controller's address
+		"tcp://0.0.0.0:5555", // Controller's address - bind all interfaces so remote workers can connect; port 5000 is taken by AirPlay Receiver on macOS
 		8, // Expected worker count
 		working_problem, // Original content of the "data" field
 	};
