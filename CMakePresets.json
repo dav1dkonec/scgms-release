@@ -7,107 +7,86 @@
   },
   "configurePresets": [
     {
-      "name": "msvc-ninja-configure",
-      "displayName": "msvc (Ninja)",
-      "description": "Configure using MSVC and Ninja",
+      "name": "common-paths",
+      "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      },
+      "cacheVariables": {
+        "SMARTCGMS_COMMON_DIR": "${sourceDir}/common",
+        "XLNT_INCLUDE": "${sourceDir}/deps/xlnt/include/",
+        "EXCELFORMAT_INCLUDE": "${sourceDir}/deps/ExcelFormat/include/",
+        "EXCELFORMAT_LIBRARY": "${sourceDir}/deps/ExcelFormat/build/",
+        "EIGEN3_INCLUDE": "${sourceDir}/deps/Eigen3"
+      }
+    },
+    {
+      "name": "win-base",
+      "hidden": true,
+      "inherits": "common-paths",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
       "environment": {
-        "QT_BASE_PATH": "C:/Qt",
         "QT_VERSION_PATH": "C:/Qt/6.9.3",
         "BOOST_PATH": "C:/local/boost_1_89_0/lib64-msvc-14.3/cmake/Boost-1.89.0"
       },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_PREFIX_PATH": "$env{QT_VERSION_PATH}/msvc2022_64;$env{BOOST_PATH}",
         "Qt6_DIR": "$env{QT_VERSION_PATH}/msvc2022_64/lib/cmake/Qt6",
-        "SMARTCGMS_COMMON_DIR": "${sourceDir}/common",
-        "XLNT_INCLUDE": "${sourceDir}/deps/xlnt/include/",
-        "XLNT_LIBRARY": "${sourceDir}/deps/xlnt/build/source/",
-        "EXCELFORMAT_INCLUDE": "${sourceDir}/deps/ExcelFormat/include/",
-        "EXCELFORMAT_LIBRARY": "${sourceDir}/deps/ExcelFormat/build/",
-        "EIGEN3_INCLUDE": "${sourceDir}/deps/Eigen3"
+        "XLNT_LIBRARY": "${sourceDir}/deps/xlnt/build/source/"
       }
     },
     {
-      "name": "macos-ninja-configure",
-      "displayName": "macOS - AppleClang (Ninja)",
-      "description": "Configure using AppleClang and Ninja, with Qt, Boost and TBB provided by Homebrew. On an Intel Mac, override HOMEBREW_PATH with /usr/local. XLNT_LIBRARY points into the build tree because the xlnt dylib, unlike the Windows import library, is a LIBRARY artifact and therefore follows CMAKE_LIBRARY_OUTPUT_DIRECTORY into <binaryDir>/compiled; keep it in sync when changing binaryDir.",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      },
-      "environment": {
-        "HOMEBREW_PATH": "/opt/homebrew"
-      },
+      "name": "mac-base",
+      "hidden": true,
+      "inherits": "common-paths",
+      "description": "AppleClang + Ninja, with Qt/Boost/TBB from Homebrew. On an Intel Mac set HOMEBREW_PATH to /usr/local.",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Darwin" },
+      "environment": { "HOMEBREW_PATH": "/opt/homebrew" },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_PREFIX_PATH": "$env{HOMEBREW_PATH};$env{HOMEBREW_PATH}/opt/qt;$env{HOMEBREW_PATH}/opt/boost;$env{HOMEBREW_PATH}/opt/tbb",
         "Qt6_DIR": "$env{HOMEBREW_PATH}/opt/qt/lib/cmake/Qt6",
-        "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
-        "SMARTCGMS_COMMON_DIR": "${sourceDir}/common",
-        "XLNT_INCLUDE": "${sourceDir}/deps/xlnt/include/",
-        "XLNT_LIBRARY": "${sourceDir}/build/compiled/",
-        "EXCELFORMAT_INCLUDE": "${sourceDir}/deps/ExcelFormat/include/",
-        "EXCELFORMAT_LIBRARY": "${sourceDir}/deps/ExcelFormat/build/",
-        "EIGEN3_INCLUDE": "${sourceDir}/deps/Eigen3"
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5"
       }
-    }
+    },
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "inherits": "common-paths",
+      "description": "GCC + Ninja. Qt, Boost and TBB come from the distribution (apt install qt6-base-dev qt6-svg-dev libboost-all-dev libtbb-dev).",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5"
+      }
+    },
+
+    { "name": "win-debug",   "displayName": "Windows Debug",          "inherits": "win-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
+    { "name": "win-reldbg",  "displayName": "Windows RelWithDebInfo", "inherits": "win-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" } },
+    { "name": "win-release", "displayName": "Windows Release",        "inherits": "win-base", "binaryDir": "${sourceDir}/build_Release",        "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
+
+    { "name": "mac-debug",   "displayName": "macOS Debug",            "inherits": "mac-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug",          "XLNT_LIBRARY": "${sourceDir}/build/compiled/" } },
+    { "name": "mac-reldbg",  "displayName": "macOS RelWithDebInfo",   "inherits": "mac-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "XLNT_LIBRARY": "${sourceDir}/build_RelWithDebInfo/compiled/" } },
+    { "name": "mac-release", "displayName": "macOS Release",          "inherits": "mac-base", "binaryDir": "${sourceDir}/build_Release",        "cacheVariables": { "CMAKE_BUILD_TYPE": "Release",        "XLNT_LIBRARY": "${sourceDir}/build_Release/compiled/" } },
+
+    { "name": "linux-debug",   "displayName": "Linux Debug",          "inherits": "linux-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug",          "XLNT_LIBRARY": "${sourceDir}/build/compiled/" } },
+    { "name": "linux-reldbg",  "displayName": "Linux RelWithDebInfo", "inherits": "linux-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "XLNT_LIBRARY": "${sourceDir}/build_RelWithDebInfo/compiled/" } },
+    { "name": "linux-release", "displayName": "Linux Release",        "inherits": "linux-base", "binaryDir": "${sourceDir}/build_Release",        "cacheVariables": { "CMAKE_BUILD_TYPE": "Release",        "XLNT_LIBRARY": "${sourceDir}/build_Release/compiled/" } }
   ],
   "buildPresets": [
-    {
-      "name": "msvc-ninja-build",
-      "displayName": "Build using msvc and ninja",
-      "configurePreset": "msvc-ninja-configure",
-      "jobs": 8
-    },
-    {
-      "name": "macos-ninja-build",
-      "displayName": "Build using AppleClang and ninja",
-      "configurePreset": "macos-ninja-configure",
-      "jobs": 8
-    }
+    { "name": "win-debug",     "displayName": "Windows Debug",          "configurePreset": "win-debug",     "jobs": 8 },
+    { "name": "win-reldbg",    "displayName": "Windows RelWithDebInfo", "configurePreset": "win-reldbg",    "jobs": 8 },
+    { "name": "win-release",   "displayName": "Windows Release",        "configurePreset": "win-release",   "jobs": 8 },
+    { "name": "mac-debug",     "displayName": "macOS Debug",            "configurePreset": "mac-debug",     "jobs": 8 },
+    { "name": "mac-reldbg",    "displayName": "macOS RelWithDebInfo",   "configurePreset": "mac-reldbg",    "jobs": 8 },
+    { "name": "mac-release",   "displayName": "macOS Release",          "configurePreset": "mac-release",   "jobs": 8 },
+    { "name": "linux-debug",   "displayName": "Linux Debug",            "configurePreset": "linux-debug",   "jobs": 8 },
+    { "name": "linux-reldbg",  "displayName": "Linux RelWithDebInfo",   "configurePreset": "linux-reldbg",  "jobs": 8 },
+    { "name": "linux-release", "displayName": "Linux Release",          "configurePreset": "linux-release", "jobs": 8 }
   ],
   "workflowPresets": [
-    {
-      "name": "msvc-ninja-all",
-      "displayName": "Full Ninja Workflow",
-      "description": "Configure and build using msvc and ninja",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "msvc-ninja-configure"
-        },
-        {
-          "type": "build",
-          "name": "msvc-ninja-build"
-        }
-      ]
-    },
-    {
-      "name": "macos-ninja-all",
-      "displayName": "Full Ninja Workflow (macOS)",
-      "description": "Configure and build using AppleClang and ninja",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "macos-ninja-configure"
-        },
-        {
-          "type": "build",
-          "name": "macos-ninja-build"
-        }
-      ]
-    }
+    { "name": "win",   "displayName": "Windows: configure + build (Debug)", "steps": [ { "type": "configure", "name": "win-debug" },   { "type": "build", "name": "win-debug" } ] },
+    { "name": "mac",   "displayName": "macOS: configure + build (Debug)",   "steps": [ { "type": "configure", "name": "mac-debug" },   { "type": "build", "name": "mac-debug" } ] },
+    { "name": "linux", "displayName": "Linux: configure + build (Debug)",   "steps": [ { "type": "configure", "name": "linux-debug" }, { "type": "build", "name": "linux-debug" } ] }
   ]
 }
