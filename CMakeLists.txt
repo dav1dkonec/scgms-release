@@ -21,6 +21,12 @@ endif()
 if(APPLE AND DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
     list(APPEND DEPENDENCY_CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
 endif()
+# GCC 13+ stopped providing <cstdint> transitively. The vendored xlnt uses std::uint8_t without
+# including it (include/xlnt/styles/color.hpp), which libc++ still supplies indirectly - hence this
+# breaks only on Linux. Force-include it for the dependency builds instead of patching a submodule.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND DEPENDENCY_CMAKE_ARGS "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -include cstdint")
+endif()
 
 # A failing nested CMake run only surfaces much later, as a confusing "missing and no known rule
 # to make it" from the generator, so stop as soon as one of the steps below reports an error.
