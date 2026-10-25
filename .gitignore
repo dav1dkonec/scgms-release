@@ -3,3 +3,4 @@
 /.vs
 /build_Release
 /build_RelWithDebInfo
+.DS_Store
