@@ -21,9 +21,10 @@ endif()
 if(APPLE AND DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
     list(APPEND DEPENDENCY_CMAKE_ARGS -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
 endif()
-# GCC 13+ stopped providing <cstdint> transitively. The vendored xlnt uses std::uint8_t without
-# including it (include/xlnt/styles/color.hpp), which libc++ still supplies indirectly - hence this
-# breaks only on Linux. Force-include it for the dependency builds instead of patching a submodule.
+# xlnt (a submodule) uses std::uint8_t in styles/color.hpp without including <cstdint>.
+# libstdc++ 13 no longer pulls that header in for free; libc++ on macOS still does, so this
+# fails only under GCC. -include cstdint makes the compiler prepend the header to every file,
+# which fixes it without editing the submodule.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND DEPENDENCY_CMAKE_ARGS "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -include cstdint")
 endif()
