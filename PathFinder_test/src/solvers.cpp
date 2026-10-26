@@ -164,6 +164,7 @@ void Run_Solver(const scgms::TSolver_Descriptor &desc, CCommon_Problem * working
 		"tproblem_udp", // Solver lib name
 		"tcp://0.0.0.0:5555", // Bind all interfaces; see README for the port choice
 		8, // Expected worker count
+		".", // The build output directory, which already holds tproblem_udp
 		working_problem, // Original content of the "data" field
 	};
 
