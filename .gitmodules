@@ -1,9 +1,11 @@
 [submodule "common"]
 	path = common
 	url = https://github.com/dav1dkonec/common.git
+	branch = heterogeneous-env
 [submodule "core"]
 	path = core
 	url = https://github.com/dav1dkonec/core.git
+	branch = heterogeneous-env
 [submodule "console"]
 	path = console
 	url = https://github.com/jonas-s-s-s/console.git
