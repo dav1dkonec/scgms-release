@@ -48,9 +48,30 @@
 #include <numeric>
 #include <map>
 
-#include "scgms/iface/DistributedSolverIface.h"
+#include <cstdlib>
 
 namespace diagnostic {
+
+	// Matches the names the distributed adapter reads; see core/distributed4scgms/src/distributed.h.
+	// Only set what is not already in the environment, so a run can override any of them.
+	static void Setup_Distributed_Environment() {
+		const std::pair<const char*, const char*> defaults[] = {
+			{ "SCGMS_DISTRIBUTED_CONTROLLER", "tcp://0.0.0.0:5555" },	//bind all interfaces; see README for the port choice
+			{ "SCGMS_DISTRIBUTED_WORKERS", "8" },
+			{ "SCGMS_DISTRIBUTED_UDP_LIB", "tproblem_udp" },
+			{ "SCGMS_DISTRIBUTED_CACHE_DIR", "." },						//the build output directory, which already holds tproblem_udp
+		};
+
+		for (const auto& [name, value] : defaults) {
+#ifdef _MSC_VER
+			size_t length = 0;
+			if (getenv_s(&length, nullptr, 0, name) != 0 || length == 0)
+				_putenv_s(name, value);
+#else
+			setenv(name, value, 0);	//0 = do not overwrite
+#endif
+		}
+	}
 
 	// DISTRIBUTED SOLVER
 	namespace scgms_distributed_solver
@@ -159,21 +180,17 @@ void Run_Solver(const scgms::TSolver_Descriptor &desc, CCommon_Problem * working
 
 	//using TObjective_Function = BOOL(IfaceCalling*)(const void* data, const size_t count, const double* solution, double* const fitness);
 
-	// Distributed solver - solver's data
-	solver::TDistributedSolver_Data ds_data = {
-		"tproblem_udp", // Solver lib name
-		"tcp://0.0.0.0:5555", // Bind all interfaces; see README for the port choice
-		8, // Expected worker count
-		".", // The build output directory, which already holds tproblem_udp
-		working_problem, // Original content of the "data" field
-	};
+	// The distributed solver reads its deployment settings from the environment, so that
+	// TSolver_Setup.data stays what the contract says it is. Set here rather than in the shell
+	// to keep this harness runnable on its own.
+	diagnostic::Setup_Distributed_Environment();
 
-	// Distributed solver - replaced "working_problem" with "ds_data" here, removed pointer to objective
+	// Distributed solver - removed pointer to objective, the worker evaluates the problem
 	solver::TSolver_Setup solver_setup{ lower_bound.size(), 1,
 							lower_bound.data(), upper_bound.data(),
 							nullptr, 0,			//no hints
 							local_parameters.data(),
-							&ds_data, nullptr, nullptr,
+							working_problem, nullptr, nullptr,
 							max_generations, population_size, std::numeric_limits<double>::min(),
 	};
 
