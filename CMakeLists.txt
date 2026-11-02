@@ -14,6 +14,9 @@ set(DEPENDENCY_CMAKE_ARGS
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        # The dependencies are static archives linked into the filter modules, which are
+        # shared libraries. ELF accepts that only for position-independent objects.
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 )
 if(DEFINED CMAKE_POLICY_VERSION_MINIMUM)
     list(APPEND DEPENDENCY_CMAKE_ARGS -DCMAKE_POLICY_VERSION_MINIMUM=${CMAKE_POLICY_VERSION_MINIMUM})
