@@ -97,9 +97,12 @@ message(STATUS "> xlnt has been built.")
 #########################################################################################
 # EIGEN 3
 
+# Only the headers are used. Eigen's tests, BLAS and LAPACK would enable Fortran with whatever
+# compiler is on PATH, which on Windows can be MinGW's gfortran driven with MSVC flags.
 execute_process(
         COMMAND cmake -S . -B ./build/ -G ${CMAKE_GENERATOR}
         ${DEPENDENCY_CMAKE_ARGS}
+        -DEIGEN_BUILD_TESTING=OFF -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/Eigen3
         RESULT_VARIABLE DEPENDENCY_STEP_RESULT
 )
