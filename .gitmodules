@@ -8,7 +8,7 @@
 	branch = heterogeneous-env
 [submodule "console"]
 	path = console
-	url = https://github.com/jonas-s-s-s/console.git
+	url = https://github.com/dav1dkonec/console.git
 [submodule "desktop"]
 	path = desktop
 	url = https://github.com/SmartCGMS/desktop.git
