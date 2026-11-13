@@ -38,13 +38,15 @@
 
 #include "solvers.h"
 
+#include <scgms/utils/winapi_mapping.h>
+
 #include <iostream>
 
 #ifdef WIN32
 	#include <Windows.h>
 #endif
 
-int __cdecl main(int argc, char* argv[]) {
+int MainCalling main(int argc, char* argv[]) {
 #ifdef WIN32
 	SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
 #endif
