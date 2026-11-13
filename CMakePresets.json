@@ -29,8 +29,7 @@
       },
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "$env{QT_VERSION_PATH}/msvc2022_64;$env{BOOST_PATH}",
-        "Qt6_DIR": "$env{QT_VERSION_PATH}/msvc2022_64/lib/cmake/Qt6",
-        "XLNT_LIBRARY": "${sourceDir}/deps/xlnt/build/source/"
+        "Qt6_DIR": "$env{QT_VERSION_PATH}/msvc2022_64/lib/cmake/Qt6"
       }
     },
     {
@@ -61,9 +60,9 @@
       }
     },
 
-    { "name": "win-debug",   "displayName": "Windows Debug",          "inherits": "win-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
-    { "name": "win-reldbg",  "displayName": "Windows RelWithDebInfo", "inherits": "win-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" } },
-    { "name": "win-release", "displayName": "Windows Release",        "inherits": "win-base", "binaryDir": "${sourceDir}/build_Release",        "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "win-debug",   "displayName": "Windows Debug",          "inherits": "win-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug",          "XLNT_LIBRARY": "${sourceDir}/build/compiled/" } },
+    { "name": "win-reldbg",  "displayName": "Windows RelWithDebInfo", "inherits": "win-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "XLNT_LIBRARY": "${sourceDir}/build_RelWithDebInfo/compiled/" } },
+    { "name": "win-release", "displayName": "Windows Release",        "inherits": "win-base", "binaryDir": "${sourceDir}/build_Release",        "cacheVariables": { "CMAKE_BUILD_TYPE": "Release",        "XLNT_LIBRARY": "${sourceDir}/build_Release/compiled/" } },
 
     { "name": "mac-debug",   "displayName": "macOS Debug",            "inherits": "mac-base", "binaryDir": "${sourceDir}/build",               "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug",          "XLNT_LIBRARY": "${sourceDir}/build/compiled/" } },
     { "name": "mac-reldbg",  "displayName": "macOS RelWithDebInfo",   "inherits": "mac-base", "binaryDir": "${sourceDir}/build_RelWithDebInfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "XLNT_LIBRARY": "${sourceDir}/build_RelWithDebInfo/compiled/" } },
